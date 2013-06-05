@@ -16,5 +16,5 @@ How to use
 Credits
 =======
 
-PocketMine devs ---> For creating pocketmine!!!
+PocketMine devs ---> For creating pocketmine!!!        
 Junyi00 ---> For creating the plugin
