@@ -7,19 +7,19 @@ description=Freeze the time!
 version=0.1
 author=Junyi00
 class=TimeFreeze
-apiversion=7
+apiversion=8
 */
 
 
 class TimeFreeze implements Plugin{
-    private $api, $path, $checktick;
+    private $api, $path, $secondsLeft;
     public function __construct(ServerAPI $api, $server = false){
             $this->api = $api;
     }
         
     public function init(){
         $this->api->console->register("tfreeze", "Freeze the time!", array($this, "TimeFreeze"));
-        $this->api->event("server.tick", array($this, "TimeFreezing"));
+        $this->api->schedule(200, array($this, "TimeFreezing"), array(), true, "server.schedule");
         $this->path = $this->api->plugin->createConfig($this, array(
             "Seconds for time update" => array (
                 "Seconds" => 15))); //15 seconds
@@ -32,50 +32,47 @@ class TimeFreeze implements Plugin{
     }
     
     public function TimeFreezing($date, $event) {
-      
+    	
     	$cfg = $this->api->plugin->readYAML($this->path . "config.yml");
 		$seconds = $cfg["Seconds for time update"]["Seconds"]; //get seconds
 		
 		$this->checktick = $this->checktick - 1;
 		$updateTime = false;
 		
-    	if (is_numeric($seconds)) {
-    		$checkticks = $seconds * 20; // change to ticks
-    	}
-    	else {
-        	$checkticks = 300; //15 seconds
-    	}
-    	
-    	if ($this->checktick <= 0) {
-			if (is_numeric($seconds)) {
-				$this->checktick = $checkticks; //reset
-			}
-			else {
-				$this->checktick = 100; //reset
-			}
-			$updateTime = true;
+    	$checkSeconds = $seconds / 10;
+		
+		$this->secondsLeft = $this->secondsLeft - 10;
+		
+		if (!is_int($checkSeconds)) {
+			console("[Birthday] Seconds must be a multiple of 10!!!");
+			console("[Birthday] Time would not be checked if u do not change the seconds in config!!");
 		}
+   		else {
     	
-    	if ($updateTime) {
-    		$time = $cfg["Time"];
-    		if ($time == "day") {
-    			$this->api->time->day(); //set time to day
+    		if ($this->secondsLeft <= 0) {
+    			$this->secondsLeft = $seconds;
+    			
+    			$time = $cfg["Time"];
+    			if ($time == "day") {
+    				$this->api->time->day(); //set time to day
+    			}
+    			elseif ($time == "night") {
+    				$this->api->time->night(); //set time to night
+    			}
+				elseif ($time == "sunrise") {
+    				$this->api->time->sunrise(); //set time to sunrise
+    			}
+    			elseif ($time == "sunset") {
+    				$this->api->time->sunset(); //set time to sunset
+    			}
+    			elseif (is_numeric($time)) {    			
+    				$this->api->time->set($time); //set to time in config
+    			}
+
     		}
-    		elseif ($time == "night") {
-    			$this->api->time->night(); //set time to night
-    		}
-			elseif ($time == "sunrise") {
-    			$this->api->time->sunrise(); //set time to sunrise
-    		}
-    		elseif ($time == "sunset") {
-    			$this->api->time->sunset(); //set time to sunset
-    		}
-    		elseif (is_numeric($time)) {    			
-    			$this->api->time->set($time); //set to time in config
-    		}
-    		
-    	}
-    	
+				
+   		}
+ 	
     }
         
     public function TimeFreeze($cmd, $arg){
