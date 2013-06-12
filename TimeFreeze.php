@@ -4,7 +4,7 @@
 __PocketMine Plugin__
 name=Time Freeze
 description=Freeze the time!
-version=0.1
+version=1.1
 author=Junyi00
 class=TimeFreeze
 apiversion=8
